@@ -1,0 +1,56 @@
+[
+  {
+    "name": "语义搜索(短路-RAG直查)",
+    "avg_ms": 4021.4,
+    "min_ms": 6.3,
+    "max_ms": 12050.4,
+    "avg_llm": 0,
+    "avg_tools": 0,
+    "agent": "data_agent(RAG)"
+  },
+  {
+    "name": "语义搜索(常规-Agent循环)",
+    "avg_ms": 4659.8,
+    "min_ms": 3195.4,
+    "max_ms": 6286.5,
+    "avg_llm": "?",
+    "avg_tools": "?",
+    "agent": "data_agent"
+  },
+  {
+    "name": "候选人筛选",
+    "avg_ms": 4487.3,
+    "min_ms": 3499.2,
+    "max_ms": 5917.1,
+    "avg_llm": 2.7,
+    "avg_tools": 3,
+    "agent": "screening_agent"
+  },
+  {
+    "name": "深度分析",
+    "avg_ms": 5570.6,
+    "min_ms": 4777.3,
+    "max_ms": 6756.7,
+    "avg_llm": 2.7,
+    "avg_tools": 3.3,
+    "agent": "analysis_agent"
+  },
+  {
+    "name": "面试生成",
+    "avg_ms": 6641.2,
+    "min_ms": 4529.9,
+    "max_ms": 9781.4,
+    "avg_llm": 4.3,
+    "avg_tools": 3.3,
+    "agent": "interview_agent"
+  },
+  {
+    "name": "招聘报告",
+    "avg_ms": 19058.5,
+    "min_ms": 17816.7,
+    "max_ms": 19846.1,
+    "avg_llm": 3,
+    "avg_tools": 7,
+    "agent": "report_agent"
+  }
+]

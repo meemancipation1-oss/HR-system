@@ -1,0 +1,520 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR 多智能体招聘系统</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #242838;
+    --border: #2e3348;
+    --text: #e4e6f0;
+    --text2: #9498b0;
+    --accent: #6c8cff;
+    --accent2: #5a75e6;
+    --green: #4ade80;
+    --orange: #fb923c;
+    --red: #f87171;
+    --radius: 10px;
+    --shadow: 0 4px 24px rgba(0,0,0,.3);
+  }
+  html, body { height: 100%; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif; background: var(--bg); color: var(--text); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .app { display: flex; height: 100vh; }
+  .sidebar { width: 240px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-header { padding: 20px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-header h1 { font-size: 16px; font-weight: 700; }
+  .sidebar-header p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .nav { flex: 1; padding: 8px; overflow-y: auto; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: .15s; font-size: 14px; color: var(--text2); }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent); color: #fff; }
+  .nav-item .icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text2); }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .main-header { padding: 16px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .main-header h2 { font-size: 18px; display: flex; align-items: center; gap: 10px; }
+  .main-header h2 .opt-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: rgba(74,222,128,.15); color: var(--green); }
+  .main-header p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .content { flex: 1; padding: 24px; overflow-y: auto; }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+  input, textarea, select {
+    width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-size: 14px; outline: none; transition: .15s;
+    font-family: inherit;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
+    border-radius: 6px; border: none; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: .15s; font-family: inherit;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+  .chat-box { flex: 1; overflow-y: auto; padding: 0 0 16px 0; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 220px); }
+  .msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.assistant { align-self: flex-start; background: var(--bg3); color: var(--text); border-bottom-left-radius: 4px; }
+  .msg.assistant .loading { display: inline-flex; gap: 4px; }
+  .msg.assistant .loading span { width: 6px; height: 6px; border-radius: 50%; background: var(--text2); animation: blink 1.2s infinite; }
+  .msg.assistant .loading span:nth-child(2) { animation-delay: .2s; }
+  .msg.assistant .loading span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% { opacity: .3; } 40% { opacity: 1; } }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 0 0 0; border-top: 1px solid var(--border); }
+  .chat-input-row textarea { flex: 1; min-height: 44px; max-height: 120px; }
+
+  /* ── Badges ── */
+  .metrics-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 4px 0; }
+  .metric-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+    border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid transparent;
+  }
+  .metric-badge.time { background: rgba(108,140,255,.12); color: var(--accent); border-color: rgba(108,140,255,.25); }
+  .metric-badge.llm { background: rgba(251,146,60,.12); color: var(--orange); border-color: rgba(251,146,60,.25); }
+  .metric-badge.tool { background: rgba(108,140,255,.12); color: var(--accent); border-color: rgba(108,140,255,.25); }
+  .metric-badge.shortcut {
+    background: rgba(74,222,128,.15); color: var(--green); border-color: rgba(74,222,128,.3);
+  }
+  .metric-badge .num { font-size: 14px; }
+
+  .result-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; max-height: 500px; overflow-y: auto; }
+  .result-box.empty { display: none; }
+
+  .search-item { padding: 12px 14px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); margin-bottom: 8px; }
+  .search-item h4 { font-size: 14px; color: var(--accent); }
+  .search-item p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  .table-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+  .table-item { padding: 10px 14px; border-radius: 6px; background: var(--bg); border: 1px solid var(--border); }
+  .table-item code { font-size: 13px; font-weight: 600; }
+  .table-item p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .streaming-cursor::after { content: "▊"; animation: cursor-blink .8s infinite; color: var(--accent); }
+  @keyframes cursor-blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+
+  .tool-call-log { font-size: 12px; color: var(--orange); padding: 4px 0; display: flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>🤖 HR Agent</h1>
+      <p>Multi-Agent 招聘系统</p>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-item active" data-page="chat"><span class="icon">💬</span> 智能对话</div>
+      <div class="nav-item" data-page="screen"><span class="icon">🔎</span> 候选人筛选</div>
+      <div class="nav-item" data-page="analyze"><span class="icon">📊</span> 深度分析</div>
+      <div class="nav-item" data-page="interview"><span class="icon">🎙️</span> 面试生成</div>
+      <div class="nav-item" data-page="report"><span class="icon">📝</span> 招聘报告</div>
+      <div class="nav-item" data-page="explore"><span class="icon">🗂️</span> 数据探索</div>
+      <div class="nav-item" data-page="search"><span class="icon">🔍</span> 语义搜索</div>
+    </nav>
+    <div class="sidebar-footer" style="font-size:11px;color:var(--text2);padding:12px 16px;border-top:1px solid var(--border);">
+      ✨ 语义搜索短路<br>✓ 关键词分类<br>⚡ 并行工具执行
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <h2 id="pageTitle">💬 智能对话</h2>
+      <p id="pageDesc">与 HR 多智能体系统进行自然语言对话</p>
+    </div>
+    <div class="content">
+
+      <!-- Chat Page -->
+      <div class="page active" id="page-chat">
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" rows="1" placeholder="输入你的问题，例如：帮我寻找有发明专利的候选人"></textarea>
+          <button class="btn btn-primary" id="chatSend">发送</button>
+        </div>
+      </div>
+
+      <!-- Screen Page -->
+      <div class="page" id="page-screen">
+        <div class="card">
+          <div class="form-group">
+            <label>候选人 ID（人员ID）</label>
+            <input id="screenPid" placeholder="例如：1">
+          </div>
+          <div class="form-group">
+            <label>岗位要求描述</label>
+            <textarea id="screenReq" placeholder="例如：需要博士学历、有发明专利、5年以上管理经验"></textarea>
+          </div>
+          <button class="btn btn-primary" id="screenBtn">🔎 开始筛选</button>
+        </div>
+        <div id="screenMetrics" class="metrics-bar"></div>
+        <div class="result-box empty" id="screenResult"></div>
+      </div>
+
+      <!-- Analyze Page -->
+      <div class="page" id="page-analyze">
+        <div class="card">
+          <div class="form-group">
+            <label>候选人 ID</label>
+            <input id="anaPid" placeholder="例如：1">
+          </div>
+          <div class="form-group">
+            <label>分析背景（可选）</label>
+            <textarea id="anaCtx" placeholder="例如：目标岗位为高级技术管理岗"></textarea>
+          </div>
+          <button class="btn btn-primary" id="anaBtn">📊 开始分析</button>
+        </div>
+        <div id="anaMetrics" class="metrics-bar"></div>
+        <div class="result-box empty" id="anaResult"></div>
+      </div>
+
+      <!-- Interview Page -->
+      <div class="page" id="page-interview">
+        <div class="card">
+          <div class="row">
+            <div class="form-group">
+              <label>候选人 ID</label>
+              <input id="ivPid" placeholder="例如：1">
+            </div>
+            <div class="form-group">
+              <label>目标岗位</label>
+              <input id="ivPos" placeholder="例如：高级工程师">
+            </div>
+            <div class="form-group">
+              <label>问题数量</label>
+              <input id="ivNum" type="number" value="5" min="1" max="10">
+            </div>
+          </div>
+          <button class="btn btn-primary" id="ivBtn">🎙️ 生成面试问题</button>
+        </div>
+        <div id="ivMetrics" class="metrics-bar"></div>
+        <div class="result-box empty" id="ivResult"></div>
+      </div>
+
+      <!-- Report Page -->
+      <div class="page" id="page-report">
+        <div class="card">
+          <div class="form-group">
+            <label>岗位名称</label>
+            <input id="rpPos" placeholder="例如：技术总监">
+          </div>
+          <div class="form-group">
+            <label>候选人 ID 列表（逗号分隔）</label>
+            <input id="rpIds" placeholder="例如：1, 2, 3, 5">
+          </div>
+          <button class="btn btn-primary" id="rpBtn">📝 生成报告</button>
+        </div>
+        <div id="rpMetrics" class="metrics-bar"></div>
+        <div class="result-box empty" id="rpResult"></div>
+      </div>
+
+      <!-- Explore Page -->
+      <div class="page" id="page-explore">
+        <button class="btn btn-primary" id="expBtn">🗂️ 加载数据集概览</button>
+        <div style="margin-top:16px" id="expResult"></div>
+      </div>
+
+      <!-- Search Page -->
+      <div class="page" id="page-search">
+        <div class="card">
+          <div class="form-group">
+            <label>搜索查询</label>
+            <textarea id="srchQuery" placeholder="例如：有博士学历且有发明专利的候选人"></textarea>
+          </div>
+          <button class="btn btn-primary" id="srchBtn">🔍 语义搜索</button>
+        </div>
+        <div id="srchResult"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const API = "http://localhost:8000";
+const SESSION_KEY = "hr-agent-session-id";
+let sessionId = localStorage.getItem(SESSION_KEY) || "";
+
+const pageTitles = {
+  chat:      ["💬 智能对话", "Streaming 响应 · 语义搜索短路 · 关键词分类"],
+  screen:    ["🔎 候选人筛选", "结构化评分输出 · 并行工具调用"],
+  analyze:   ["📊 深度分析", "多维度能力画像 · 数据驱动评估"],
+  interview: ["🎙️ 面试生成", "个性化问题 · 4 类题型"],
+  report:    ["📝 招聘报告", "多候选人对比 · 决策建议"],
+  explore:   ["🗂️ 数据探索", "28 张数据表 · 100+ 字段"],
+  search:    ["🔍 语义搜索", "向量检索 · 零 LLM 调用（优化）"],
+};
+
+document.querySelectorAll(".nav-item").forEach(item => {
+  item.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    item.classList.add("active");
+    const page = item.dataset.page;
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("page-" + page).classList.add("active");
+    const [t, d] = pageTitles[page];
+    document.getElementById("pageTitle").innerHTML = t;
+    document.getElementById("pageDesc").textContent = d;
+  });
+});
+
+async function apiPost(path, body) {
+  const r = await fetch(API + path, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+  return r.json();
+}
+
+async function apiGet(path) {
+  const r = await fetch(API + path);
+  if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+  return r.json();
+}
+
+function showMetrics(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!data) { el.innerHTML = ""; return; }
+  let html = `<span class="metric-badge time">⏱ <span class="num">${data.elapsed_ms}</span> ms</span>`;
+  if (data.planner_llm_calls !== undefined) {
+    html += `<span class="metric-badge llm">🤖 规划 LLM <span class="num">${data.planner_llm_calls}</span> 次</span>`;
+  } else if (data.llm_calls !== undefined) {
+    html += `<span class="metric-badge llm">🤖 LLM <span class="num">${data.llm_calls}</span> 次</span>`;
+  }
+  if (data.tool_calls !== undefined) {
+    html += `<span class="metric-badge tool">🔧 工具 <span class="num">${data.tool_calls}</span> 次</span>`;
+  }
+  if (data.shortcut) {
+    html += `<span class="metric-badge shortcut">⚡ 搜索短路（0 LLM）</span>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── Chat (Streaming) ──
+const chatBox = document.getElementById("chatBox");
+const chatInput = document.getElementById("chatInput");
+const chatSend = document.getElementById("chatSend");
+
+chatSend.addEventListener("click", async () => {
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  chatInput.value = "";
+  chatSend.disabled = true;
+
+  // User message
+  const uw = document.createElement("div");
+  uw.style.cssText = "display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:85%;align-self:flex-end;";
+  const ub = document.createElement("div");
+  ub.className = "msg user";
+  ub.textContent = msg;
+  uw.appendChild(ub);
+  chatBox.appendChild(uw);
+
+  // Assistant
+  const aw = document.createElement("div");
+  aw.style.cssText = "display:flex;flex-direction:column;align-items:flex-start;gap:4px;max-width:85%;";
+  const ab = document.createElement("div");
+  ab.className = "msg assistant streaming-cursor";
+  ab.textContent = "";
+  aw.appendChild(ab);
+  chatBox.appendChild(aw);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    const resp = await fetch(API + "/chat/stream", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ message: msg, session_id: sessionId || null }),
+    });
+
+    if (!resp.ok) throw new Error(resp.statusText);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const payload = line.slice(6).trim();
+        if (payload === "[DONE]") continue;
+
+        try {
+          const data = JSON.parse(payload);
+          if (data.type === "content") {
+            fullText = data.text;
+            ab.textContent = fullText;
+            ab.classList.remove("streaming-cursor");
+
+            if (data.metrics) {
+              const m = document.createElement("div");
+              m.className = "metrics-bar";
+              let mhtml = `<span class="metric-badge time">⏱ <span class="num">${data.metrics.elapsed_ms}</span> ms</span>`;
+              if (data.metrics.pipeline) {
+                mhtml += `<span class="metric-badge tool">🔄 ${data.metrics.pipeline}</span>`;
+                mhtml += `<span class="metric-badge llm">🤖 规划 LLM <span class="num">${data.metrics.planner_llm_calls || 0}</span> 次</span>`;
+              } else {
+                mhtml += `<span class="metric-badge llm">🤖 LLM <span class="num">${data.metrics.llm_calls}</span> 次</span>`;
+                mhtml += `<span class="metric-badge tool">🔧 工具 <span class="num">${data.metrics.tool_calls}</span> 次</span>`;
+              }
+              if (data.metrics.shortcut) {
+                mhtml += `<span class="metric-badge shortcut">⚡ 语义搜索短路</span>`;
+              }
+              m.innerHTML = mhtml;
+              aw.appendChild(m);
+            }
+            if (data.session_id && data.session_id !== sessionId) {
+              sessionId = data.session_id;
+              localStorage.setItem(SESSION_KEY, sessionId);
+            }
+          } else if (data.type === "tool_call") {
+            ab.textContent = `🔧 正在调用工具: ${data.names.join(", ")}...`;
+          }
+        } catch (e) {}
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    ab.classList.remove("streaming-cursor");
+  } catch (e) {
+    ab.textContent = "❌ 请求失败: " + e.message;
+    ab.classList.remove("streaming-cursor");
+  }
+  chatSend.disabled = false;
+});
+
+chatInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chatSend.click(); }
+});
+
+// ── Perf-enabled task runner ──
+async function runTaskPerf(btnId, resultId, metricsId, endpoint, body) {
+  const btn = document.getElementById(btnId);
+  const box = document.getElementById(resultId);
+  btn.disabled = true;
+  box.classList.remove("empty");
+  box.textContent = "⏳ 处理中...";
+  document.getElementById(metricsId).innerHTML = "";
+  try {
+    const data = await apiPost(endpoint, body);
+    box.textContent = data.response || JSON.stringify(data, null, 2);
+    if (data.metrics) showMetrics(metricsId, data.metrics);
+  } catch (e) {
+    box.textContent = "❌ 请求失败: " + e.message;
+  }
+  btn.disabled = false;
+}
+
+document.getElementById("screenBtn").addEventListener("click", () => {
+  const pid = document.getElementById("screenPid").value.trim();
+  const req = document.getElementById("screenReq").value.trim();
+  if (!pid) { alert("请输入候选人 ID"); return; }
+  runTaskPerf("screenBtn", "screenResult", "screenMetrics", "/chat/perf",
+    { message: `请筛选评估候选人 ${pid}。岗位要求: ${req}` });
+});
+
+document.getElementById("anaBtn").addEventListener("click", () => {
+  const pid = document.getElementById("anaPid").value.trim();
+  const ctx = document.getElementById("anaCtx").value.trim();
+  if (!pid) { alert("请输入候选人 ID"); return; }
+  runTaskPerf("anaBtn", "anaResult", "anaMetrics", "/chat/perf",
+    { message: `请对候选人 ${pid} 进行深度能力分析。背景: ${ctx}` });
+});
+
+document.getElementById("ivBtn").addEventListener("click", () => {
+  const pid = document.getElementById("ivPid").value.trim();
+  const pos = document.getElementById("ivPos").value.trim();
+  const num = document.getElementById("ivNum").value || 5;
+  if (!pid) { alert("请输入候选人 ID"); return; }
+  runTaskPerf("ivBtn", "ivResult", "ivMetrics", "/chat/perf",
+    { message: `请为候选人 ${pid} 生成 ${num} 个针对性的面试问题。目标岗位: ${pos}` });
+});
+
+document.getElementById("rpBtn").addEventListener("click", () => {
+  const pos = document.getElementById("rpPos").value.trim();
+  const ids = document.getElementById("rpIds").value.trim();
+  if (!pos || !ids) { alert("请填写岗位名称和候选人 ID"); return; }
+  runTaskPerf("rpBtn", "rpResult", "rpMetrics", "/report",
+    { position_name: pos, candidate_ids: ids.split(",").map(s => s.trim()).filter(Boolean) });
+});
+
+document.getElementById("expBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("expBtn");
+  const box = document.getElementById("expResult");
+  btn.disabled = true;
+  box.innerHTML = "<p style='color:var(--text2)'>⏳ 加载中...</p>";
+  try {
+    const data = await apiGet("/explore");
+    const tables = data.response.split("\n").filter(l => l.startsWith("- **"));
+    let html = '<div class="table-list">';
+    tables.forEach(line => {
+      const m = line.match(/- \*\*(.+?)\*\*: (.+)/);
+      if (m) html += `<div class="table-item"><code>${m[1]}</code><p>${m[2]}</p></div>`;
+    });
+    html += "</div>";
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = "<p style='color:var(--red)'>❌ " + e.message + "</p>";
+  }
+  btn.disabled = false;
+});
+
+document.getElementById("srchBtn").addEventListener("click", async () => {
+  const query = document.getElementById("srchQuery").value.trim();
+  if (!query) { alert("请输入搜索查询"); return; }
+  const btn = document.getElementById("srchBtn");
+  const box = document.getElementById("srchResult");
+  btn.disabled = true;
+  box.innerHTML = "<p style='color:var(--text2)'>⏳ 搜索中...</p>";
+  try {
+    const data = await apiPost("/search?query=" + encodeURIComponent(query) + "&top_k=5", {});
+    const results = data.results || data;
+    if (results.length === 0) {
+      box.innerHTML = "<p style='color:var(--text2)'>未找到匹配结果</p>";
+    } else {
+      let html = "";
+      results.forEach(r => {
+        html += `<div class="search-item"><h4>👤 ${r.姓名} (${r.人员ID})</h4><p>${r.摘要}</p></div>`;
+      });
+      box.innerHTML = html;
+    }
+  } catch (e) {
+    box.innerHTML = "<p style='color:var(--red)'>❌ " + e.message + "</p>";
+  }
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>

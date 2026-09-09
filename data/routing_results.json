@@ -1,0 +1,222 @@
+{
+  "总案例数": 24,
+  "总准确率": 1.0,
+  "按类别": {
+    "正向快路": [
+      6,
+      6
+    ],
+    "否定拦截": [
+      5,
+      5
+    ],
+    "复杂信号拦截": [
+      4,
+      4
+    ],
+    "统计分流": [
+      3,
+      3
+    ],
+    "关键词分类": [
+      6,
+      6
+    ]
+  },
+  "快路设计放行": 6,
+  "快路放行正确": 6,
+  "明细": [
+    {
+      "query": "寻找会飞的博士",
+      "category": "正向快路",
+      "expect_shortcut": true,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=放行"
+    },
+    {
+      "query": "查找有发明专利的候选人",
+      "category": "正向快路",
+      "expect_shortcut": true,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=放行"
+    },
+    {
+      "query": "推荐有飞行经验的人才",
+      "category": "正向快路",
+      "expect_shortcut": true,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=放行"
+    },
+    {
+      "query": "有没有擅长多国语言的博士",
+      "category": "正向快路",
+      "expect_shortcut": true,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=放行"
+    },
+    {
+      "query": "找出获得过一等奖的博士",
+      "category": "正向快路",
+      "expect_shortcut": true,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=放行"
+    },
+    {
+      "query": "寻找擅长飞行且会多国语言的博士",
+      "category": "正向快路",
+      "expect_shortcut": true,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=放行"
+    },
+    {
+      "query": "不要博士学历的候选人",
+      "category": "否定拦截",
+      "expect_shortcut": false,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=None, 期望=LLM兜底"
+    },
+    {
+      "query": "筛出会英语的博士，硕士不要",
+      "category": "否定拦截",
+      "expect_shortcut": false,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=None, 期望=LLM兜底"
+    },
+    {
+      "query": "排除没有飞行经验的候选人",
+      "category": "否定拦截",
+      "expect_shortcut": false,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=None, 期望=LLM兜底"
+    },
+    {
+      "query": "非博士学历的候选人",
+      "category": "否定拦截",
+      "expect_shortcut": false,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=None, 期望=LLM兜底"
+    },
+    {
+      "query": "没有专利的人才不考虑",
+      "category": "否定拦截",
+      "expect_shortcut": false,
+      "expect_agent": null,
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=None, 期望=LLM兜底"
+    },
+    {
+      "query": "筛选出会英语的博士并生成面试题",
+      "category": "复杂信号拦截",
+      "expect_shortcut": false,
+      "expect_agent": "any",
+      "passed": true,
+      "detail": "快路=拒绝"
+    },
+    {
+      "query": "和上次一样再找几个博士",
+      "category": "复杂信号拦截",
+      "expect_shortcut": false,
+      "expect_agent": "any",
+      "passed": true,
+      "detail": "快路=拒绝"
+    },
+    {
+      "query": "和飞行专业的比哪个更合适",
+      "category": "复杂信号拦截",
+      "expect_shortcut": false,
+      "expect_agent": "any",
+      "passed": true,
+      "detail": "快路=拒绝"
+    },
+    {
+      "query": "是不是有会飞的人才",
+      "category": "复杂信号拦截",
+      "expect_shortcut": false,
+      "expect_agent": "any",
+      "passed": true,
+      "detail": "快路=拒绝"
+    },
+    {
+      "query": "统计有多少博士",
+      "category": "统计分流",
+      "expect_shortcut": false,
+      "expect_agent": "data_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=data_agent, 期望=data_agent"
+    },
+    {
+      "query": "博士人数分布",
+      "category": "统计分流",
+      "expect_shortcut": false,
+      "expect_agent": "data_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=data_agent, 期望=data_agent"
+    },
+    {
+      "query": "统计博士数量",
+      "category": "统计分流",
+      "expect_shortcut": false,
+      "expect_agent": "data_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=data_agent, 期望=data_agent"
+    },
+    {
+      "query": "筛选符合要求的候选人",
+      "category": "关键词分类",
+      "expect_shortcut": false,
+      "expect_agent": "screening_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=screening_agent, 期望=screening_agent"
+    },
+    {
+      "query": "评估候选人是否适合",
+      "category": "关键词分类",
+      "expect_shortcut": false,
+      "expect_agent": "screening_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=screening_agent, 期望=screening_agent"
+    },
+    {
+      "query": "分析候选人的发展潜力",
+      "category": "关键词分类",
+      "expect_shortcut": false,
+      "expect_agent": "analysis_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=analysis_agent, 期望=analysis_agent"
+    },
+    {
+      "query": "生成面试题目",
+      "category": "关键词分类",
+      "expect_shortcut": false,
+      "expect_agent": "interview_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=interview_agent, 期望=interview_agent"
+    },
+    {
+      "query": "生成招聘报告",
+      "category": "关键词分类",
+      "expect_shortcut": false,
+      "expect_agent": "report_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=report_agent, 期望=report_agent"
+    },
+    {
+      "query": "有哪些表",
+      "category": "关键词分类",
+      "expect_shortcut": false,
+      "expect_agent": "data_agent",
+      "passed": true,
+      "detail": "快路=拒绝, 关键词=data_agent, 期望=data_agent"
+    }
+  ]
+}

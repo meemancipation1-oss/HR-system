@@ -1,0 +1,41 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+*.env.local
+
+# Vector DB
+data/chroma_db/
+data/sessions.sqlite3
+data/events.jsonl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python virtual environments and test caches
+venv/
+.venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local/generated runtime artifacts
+*.log
+*.sqlite
+*.sqlite3
+data/*.jsonl

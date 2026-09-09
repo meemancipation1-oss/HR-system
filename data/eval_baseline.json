@@ -1,0 +1,10 @@
+{
+  "version": "2026-08-20",
+  "description": "20-case screening evaluation baseline, seed=42, 5 cases per scenario",
+  "thresholds": {
+    "准确率_min": 0.60,
+    "F1_min": 0.60,
+    "评分MAE_max": 18.0,
+    "路由准确率_min": 1.0
+  }
+}
